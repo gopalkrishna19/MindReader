@@ -1,357 +1,455 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mind Reading Trick</title>
-    
+    <title>Mind Reader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* General Body and Main Container Styling */
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #FF6584;
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --grid-bg: #1e293b;
+            --cell-hover: #334155;
+            --accent: #38bdf8;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            padding: 20px;
             min-height: 100vh;
-            box-sizing: border-box; /* Ensures padding doesn't break layout */
+            overflow-x: hidden;
         }
 
-        main {
+        header {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(255, 101, 132, 0.1));
             width: 100%;
-            max-width: 800px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            padding: 24px;
-            box-sizing: border-box;
-        }
-
-        h1, h2 {
-            color: #1c1c1e;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1.5rem;
         }
 
         h1 {
+            margin: 0;
+            font-size: 2rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .instructions {
+            max-width: 800px;
             text-align: center;
+            padding: 0 1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+            font-size: 0.95rem;
         }
 
-        p, li {
-            font-size: 1.1rem;
-            line-height: 1.6;
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+            padding: 0 1rem;
+            box-sizing: border-box;
         }
 
-        /* Symbol Grid (10x10) */
-        #symbol-grid {
+        .grid-container {
             display: grid;
-            grid-template-columns: repeat(10, minmax(0, 1fr)); /* 10 flexible columns */
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 5px;
+            width: 100%;
+            max-width: 800px;
+            padding: 0.8rem;
+            background: var(--grid-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2rem;
         }
 
-        /* Individual Cell in the Grid */
-        .symbol-cell {
+        .grid-item {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 8px 4px;
-            border: 1px solid #eee;
-            background-color: #fafafa;
-            box-sizing: border-box;
-            /* Ensures text doesn't wrap and break layout */
-            white-space: nowrap; 
+            padding: 2px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            aspect-ratio: 1/1;
             overflow: hidden;
         }
 
-        .symbol-cell .number {
-            font-size: 1.25rem;
-            font-weight: 500;
-            color: #888;
+        .grid-item:hover {
+            background: var(--cell-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
-        .symbol-cell .symbol {
-            font-size: 1.75rem; /* Large, clear symbol */
-            color: #000;
-            margin-top: 4px;
+        .number {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 600;
+            line-height: 1;
+            margin-bottom: 0;
         }
 
-        /* Container for Instructions + Result Box */
-        .content-container {
+        .symbol {
+            font-size: 1.6rem;
+            color: var(--text-color);
+            line-height: 1.1;
+        }
+
+        .controls {
             display: flex;
-            gap: 20px;
-        }
-
-        .instructions {
-            flex: 3; /* Takes up 3/4 of the width */
-            min-width: 0; /* Allows shrinking */
-        }
-
-        /* Container for the black box */
-        .result-container {
-            flex: 1; /* Takes up 1/4 of the width */
-            display: flex;
-            align-items: flex-start; /* Aligns box to the top */
-            justify-content: center;
-            padding-top: 20px; /* Aligns with instruction text */
-            min-width: 140px;
-        }
-
-        /* The black box that reveals the symbol */
-        #result-display {
-            width: 120px;
-            height: 120px;
-            background-color: #1c1c1e;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        /* The revealed symbol text */
-        #result-symbol {
-            font-size: 4.5rem;
-            color: #ffffff;
-            font-weight: bold;
-            opacity: 0; /* Start hidden */
-            transition: opacity 0.3s ease-in-out; /* Smooth fade-in */
-        }
-        
-        #result-symbol.visible {
-            opacity: 1;
-        }
-
-        /* Button Styling */
-        .button-container {
-            text-align: center;
-            margin-top: 24px;
-            border-top: 1px solid #eee;
-            padding-top: 24px;
+            gap: 1rem;
+            margin-bottom: 3rem;
         }
 
         button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 50px;
             font-size: 1rem;
             font-weight: 600;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            min-width: 140px; /* Gives buttons a uniform width */
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4);
         }
 
-        button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.6);
         }
 
-        #read-mind-btn {
-            background-color: #007aff;
-            color: white;
-            margin-right: 10px;
+        button.secondary {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            box-shadow: none;
         }
 
-        #read-mind-btn:hover:not(:disabled) {
-            background-color: #0056b3;
+        button.secondary:hover {
+            background: rgba(108, 99, 255, 0.1);
         }
 
-        #try-again-btn {
-            background-color: #e5e5ea;
-            color: #1c1c1e;
+        #result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
         }
 
-        #try-again-btn:hover:not(:disabled) {
-            background-color: #d1d1d6;
+        #result-overlay.active {
+            opacity: 1;
+            pointer-events: all;
         }
 
-        /* --- Mobile Responsive Layout --- */
-        @media (max-width: 600px) {
-            body {
-                padding: 10px; /* Less padding on small screens */
+        .magic-symbol {
+            font-size: 8rem;
+            color: var(--secondary-color);
+            text-shadow: 0 0 30px rgba(255, 101, 132, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .result-text {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+            text-align: center;
+            padding: 0 1rem;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
             }
-            main {
-                padding: 15px;
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
             }
 
-            p, li {
-                font-size: 1rem; /* Slightly smaller text */
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Loading Screen Styles */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(108, 99, 255, 0.2);
+            border-top: 6px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 20px rgba(255, 101, 132, 0.3);
+        }
+
+        .loading-text {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: pulse-text 1.5s infinite ease-in-out;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
             }
 
-            /* Stack instructions and result box vertically */
-            .content-container {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse-text {
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(0.95);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .grid-container {
+                gap: 3px;
+                padding: 0.5rem;
+                max-width: 100%;
+            }
+
+            .number {
+                font-size: 0.65rem;
+            }
+
+            .symbol {
+                font-size: 1.3rem;
+            }
+
+            .grid-item {
+                border-radius: 4px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .instructions {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid-container {
+                gap: 2px;
+                padding: 0.4rem;
+            }
+
+            .number {
+                font-size: 0.55rem;
+            }
+
+            .symbol {
+                font-size: 1.1rem;
+            }
+
+            .controls {
                 flex-direction: column;
+                width: 80%;
+                gap: 0.8rem;
             }
 
-            .result-container {
-                padding-top: 0;
-                align-items: center; /* Center the box */
-            }
-
-            /* Make grid symbols smaller to fit */
-            .symbol-cell {
-                padding: 4px 2px;
-            }
-            .symbol-cell .number {
-                font-size: 0.6rem;
-            }
-            .symbol-cell .symbol {
-                font-size: 1.2rem;
-            }
-
-            /* Stack buttons */
-            .button-container {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-            #read-mind-btn {
-                margin-right: 0;
+            button {
+                width: 100%;
             }
         }
-
     </style>
 </head>
+
 <body>
 
-    <main>
-        <h1>Mind Reading Trick</h1>
-        <p>Follow the instructions Given Below the Numbers, click the button and see if I can predict the symbol you are thinking of. It will appear in the dark square.</p>
-        
-        <div id="symbol-grid"></div>
-        
-        <div class="content-container">
-            
-            <div class="instructions">
-                <h2>Instructions</h2>
-                <ol>
-                    <li>Select any two digit number.</li>
-                    <li>Add the two digits together, and subtract this from your starting number.*</li>
-                    <li>Using this final answer, look up the magic symbol on the table above.</li>
-                    <li>Concentrate very hard on this symbol.</li>
-                    <li>Click the <strong>Read my mind</strong> button!</li>
-                </ol>
-                <p>*e.g. If your number was 51, then 5 + 1 = 6. Subtract 6 from 51 to get your symbol at number 45.</p>
-            </div>
+    <header>
+        <h1>Mind Reader</h1>
+    </header>
 
-            <div class="result-container">
-                <div id="result-display">
-                    <span id="result-symbol"></span>
-                </div>
-            </div>
+    <div class="instructions">
+        <p>1. Choose any two-digit number (e.g., 23).</p>
+        <p>2. Add the two digits together (e.g., 2 + 3 = 5).</p>
+        <p>3. Subtract that sum from your original number (e.g., 23 - 5 = 18).</p>
+        <p>4. Find the resulting number in the chart below and memorize its symbol.</p>
+        <p>5. Concentrate on that symbol...</p>
+    </div>
+
+    <div class="game-container">
+        <div class="grid-container" id="grid">
+            <!-- Grid items will be generated here -->
         </div>
 
-        <div class="button-container">
-            <button id="read-mind-btn">Read my mind</button>
-            <button id="try-again-btn">Try again</button>
+        <div class="controls">
+            <button onclick="revealSymbol()">Read My Mind</button>
         </div>
-    </main>
+    </div>
+
+    <div id="loading-overlay">
+        <div class="loader"></div>
+        <div class="loading-text">Reading Mind...</div>
+    </div>
+
+    <div id="result-overlay">
+        <div class="result-text">The symbol you are thinking of is...</div>
+        <div class="magic-symbol" id="magic-symbol-display">?</div>
+        <button onclick="closeResult()" style="margin-top: 2rem;">Play Again</button>
+    </div>
 
     <script>
-        // Get references to the HTML elements we need to work with
-        const grid = document.getElementById('symbol-grid');
-        const resultSymbol = document.getElementById('result-symbol');
-        const readMindBtn = document.getElementById('read-mind-btn');
-        const tryAgainBtn = document.getElementById('try-again-btn');
+        const symbols = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+        let currentMagicSymbol = '';
 
-        // UPDATED: Only the 12 Zodiac symbols
-        const SYMBOLS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
-
-        // This variable will hold the "correct" symbol for the current round
-        let magicSymbol = '';
-
-        /**
-         * A helper function to pick one random symbol from our list
-         */
         function getRandomSymbol() {
-            const randomIndex = Math.floor(Math.random() * SYMBOLS.length);
-            return SYMBOLS[randomIndex];
+            return symbols[Math.floor(Math.random() * symbols.length)];
         }
 
-        /**
-         * This is the main function that builds and shuffles the grid.
-         */
-        function populateGrid() {
-            // 1. Clear the grid and hide the previous result
+        function initGame() {
+            const grid = document.getElementById('grid');
             grid.innerHTML = '';
-            resultSymbol.textContent = '';
-            resultSymbol.classList.remove('visible'); // Hide it
 
-            // 2. Reset buttons to their default state
-            readMindBtn.textContent = 'Read my mind';
-            readMindBtn.disabled = false;
-            tryAgainBtn.disabled = false;
+            // Select a magic symbol for this round
+            currentMagicSymbol = getRandomSymbol();
 
-            // 3. Pick the "magic symbol" for this new round.
-            magicSymbol = getRandomSymbol();
+            // Select a different symbol for 90 and 99
+            let distractorSymbol = getRandomSymbol();
+            while (distractorSymbol === currentMagicSymbol) {
+                distractorSymbol = getRandomSymbol();
+            }
 
-            // 4. Loop from 0 to 99 to create each cell
-            for (let i = 0; i < 100; i++) {
-                let currentSymbol = '';
+            // Generate numbers 1 to 99
+            // 9 rows * 11 cols = 99 items.
+            // We want to display them in order.
 
-                // 5. THE TRICK:
-                // If the number 'i' is a multiple of 9 (0, 9, 18, 27...),
-                // assign it the magicSymbol.
-                if (i % 9 === 0) {
-                    currentSymbol = magicSymbol;
+            for (let i = 1; i <= 99; i++) {
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+
+                let symbol = '';
+
+                // Logic for symbols
+                // 1 and 50 -> Magic Symbol
+                // Multiples of 9 (except 90, 99) -> Magic Symbol
+                // 90, 99 -> Distractor Symbol
+                // Others -> Random (not Magic Symbol)
+
+                const isMultipleOf9 = (i % 9 === 0);
+
+                if (i === 1 || i === 50) {
+                    symbol = currentMagicSymbol;
+                } else if (isMultipleOf9) {
+                    if (i === 90 || i === 99) {
+                        symbol = distractorSymbol;
+                    } else {
+                        symbol = currentMagicSymbol;
+                    }
                 } else {
-                    // Otherwise, assign it any random symbol.
-                    currentSymbol = getRandomSymbol();
+                    do {
+                        symbol = getRandomSymbol();
+                    } while (symbol === currentMagicSymbol);
                 }
 
-                // 6. Create and add the HTML elements for the cell
-                const cell = document.createElement('div');
-                cell.className = 'symbol-cell';
-
-                const numberSpan = document.createElement('span');
-                numberSpan.className = 'number';
-                numberSpan.textContent = i;
-
-                const symbolSpan = document.createElement('span');
-                symbolSpan.className = 'symbol';
-                symbolSpan.textContent = currentSymbol;
-
-                cell.appendChild(numberSpan);
-                cell.appendChild(symbolSpan);
-                grid.appendChild(cell);
+                item.innerHTML = `
+                    <span class="number">${i}</span>
+                    <span class="symbol">${symbol}</span>
+                `;
+                grid.appendChild(item);
             }
         }
 
-        /**
-         * This function reveals the "magic symbol" with a delay.
-         */
         function revealSymbol() {
-            // 1. Show "Mind Reading" state and disable buttons
-            readMindBtn.textContent = 'Mind Reading...';
-            readMindBtn.disabled = true;
-            tryAgainBtn.disabled = true;
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const resultOverlay = document.getElementById('result-overlay');
+            const display = document.getElementById('magic-symbol-display');
 
-            // 2. Wait for 1.5 seconds (1500 milliseconds)
+            // Show loading screen
+            loadingOverlay.classList.add('active');
+
+            // Wait for 1.5 seconds (dramatic pause)
             setTimeout(() => {
-                // 3. Reveal the symbol
-                resultSymbol.textContent = magicSymbol;
-                resultSymbol.classList.add('visible'); // Fade it in
-
-                // 4. Re-enable the "Try again" button only and revert button text
-                readMindBtn.textContent = 'Read my mind';
-                tryAgainBtn.disabled = false;
-                // Keep read mind button disabled until a new grid is made
-                readMindBtn.disabled = true;
-            }, 1500); // 1.5-second delay
+                loadingOverlay.classList.remove('active');
+                display.textContent = currentMagicSymbol;
+                resultOverlay.classList.add('active');
+            }, 1500);
         }
 
-        // --- Event Listeners ---
-        
-        // When "Read my mind" is clicked, run the reveal function
-        readMindBtn.addEventListener('click', revealSymbol);
+        function closeResult() {
+            document.getElementById('result-overlay').classList.remove('active');
+            resetGame();
+        }
 
-        // When "Try again" is clicked, re-run the populateGrid function
-        tryAgainBtn.addEventListener('click', populateGrid);
+        function resetGame() {
+            initGame();
+        }
 
-        // When the page first loads, run populateGrid to set up the game
-        document.addEventListener('DOMContentLoaded', populateGrid);
-
+        // Initialize on load
+        window.onload = initGame;
     </script>
 </body>
+
 </html>
